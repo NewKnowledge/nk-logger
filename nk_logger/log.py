@@ -21,8 +21,8 @@ def get_logger(name, level="INFO"):
     err_handler.setFormatter(formatter)
 
     # turn off root logger
-    root = logging.getLogger()
-    root.addFilter(lambda x: False)
+    # root = logging.getLogger()
+    # root.addFilter(lambda x: False)
     # set root log level to see other packages info/debug logs (e.g. adl, kafka)
     # root.setLevel(LOG_LEVEL)
 

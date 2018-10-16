@@ -20,15 +20,11 @@ def get_logger(name, level="INFO"):
     err_handler.setLevel(logging.WARNING)
     err_handler.setFormatter(formatter)
 
-    # turn off root logger
-    # root = logging.getLogger()
-    # root.addFilter(lambda x: False)
-    # set root log level to see other packages info/debug logs (e.g. adl, kafka)
-    # root.setLevel(LOG_LEVEL)
-
     logger = logging.Logger(name, level=level)
     logger.addHandler(out_handler)
     logger.addHandler(err_handler)
+
+    logger.info("")
     return logger
 
 

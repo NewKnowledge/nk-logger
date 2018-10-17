@@ -7,7 +7,15 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-from .config import LOG_LEVEL, SERVICE_NAME
+LOG_LEVEL = "INFO"
+SERVICE_NAME = "app"
+
+
+def config_logger(log_level, service_name):
+    global LOG_LEVEL
+    global SERVICE_NAME
+    LOG_LEVEL = log_level
+    SERVICE_NAME = service_name
 
 
 def get_logger(name, level=LOG_LEVEL):

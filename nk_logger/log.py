@@ -7,18 +7,15 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-LOG_LEVEL = "INFO"
-SERVICE_NAME = "app"
+LOGGER_CONFIG = {"level": "INFO", "service_name": ""}
 
 
-def config_logger(log_level, service_name):
-    global LOG_LEVEL
-    global SERVICE_NAME
-    LOG_LEVEL = log_level
-    SERVICE_NAME = service_name
+def set_logger_config(log_level, service_name):
+    LOGGER_CONFIG["level"] = log_level
+    LOGGER_CONFIG["service"] = service_name
 
 
-def get_logger(name, level=LOG_LEVEL):
+def get_logger(name, level=LOGGER_CONFIG["level"]):
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
     out_handler = logging.StreamHandler(sys.stdout)
@@ -31,7 +28,7 @@ def get_logger(name, level=LOG_LEVEL):
     err_handler.setLevel(logging.WARNING)
     err_handler.setFormatter(formatter)
 
-    logger = logging.Logger(f"{SERVICE_NAME}.{name}", level=level)
+    logger = logging.Logger(f"{LOGGER_CONFIG['service']}.{name}", level=level)
     logger.addHandler(out_handler)
     logger.addHandler(err_handler)
 

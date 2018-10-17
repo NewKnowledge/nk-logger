@@ -9,6 +9,7 @@ from pythonjsonlogger import jsonlogger
 
 
 def get_logger(name, level="INFO"):
+
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
     out_handler = logging.StreamHandler(sys.stdout)
     out_handler.setLevel(level)
@@ -24,9 +25,12 @@ def get_logger(name, level="INFO"):
     logger.addHandler(out_handler)
     logger.addHandler(err_handler)
 
-    logger.info("")
     return logger
 
 
 _logger = get_logger(__name__)
 _logger.info("initialized logger")
+root_logger = logging.getLogger()
+if root_logger.hasHandlers():
+    _logger.info(f"removing root logger handlers: {root_logger.handlers}")
+    root_logger.handlers = []

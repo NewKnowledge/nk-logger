@@ -7,8 +7,10 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
+from .config import LOG_LEVEL, SERVICE_NAME
 
-def get_logger(name, level="INFO"):
+
+def get_logger(name, level=LOG_LEVEL):
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
     out_handler = logging.StreamHandler(sys.stdout)
@@ -21,7 +23,7 @@ def get_logger(name, level="INFO"):
     err_handler.setLevel(logging.WARNING)
     err_handler.setFormatter(formatter)
 
-    logger = logging.Logger(name, level=level)
+    logger = logging.Logger(f"{SERVICE_NAME}.{name}", level=level)
     logger.addHandler(out_handler)
     logger.addHandler(err_handler)
 
@@ -30,6 +32,8 @@ def get_logger(name, level="INFO"):
 
 _logger = get_logger(__name__)
 _logger.info("initialized logger")
+
+# remove root logger handlers if it has been given default handler(s)
 root_logger = logging.getLogger()
 if root_logger.hasHandlers():
     _logger.info(f"removing root logger handlers: {root_logger.handlers}")

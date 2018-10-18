@@ -7,7 +7,7 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-LOGGER_CONFIG = {"level": "INFO", "service_name": ""}
+LOGGER_CONFIG = {"level": "INFO", "service": ""}
 
 
 def set_logger_config(log_level, service_name):

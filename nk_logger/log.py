@@ -7,8 +7,16 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
+LOGGER_CONFIG = {"level": "INFO", "service": ""}
 
-def get_logger(name, level="INFO"):
+
+def set_logger_config(log_level, service_name):
+    LOGGER_CONFIG["level"] = log_level
+    LOGGER_CONFIG["service"] = service_name
+
+
+def get_logger(name, level=LOGGER_CONFIG["level"]):
+
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
     out_handler = logging.StreamHandler(sys.stdout)
     out_handler.setLevel(level)
@@ -20,15 +28,18 @@ def get_logger(name, level="INFO"):
     err_handler.setLevel(logging.WARNING)
     err_handler.setFormatter(formatter)
 
-    # set root log level to see other packages info/debug logs (e.g. adl, kafka)
-    # root = logging.getLogger()
-    # root.setLevel(LOG_LEVEL)
-
-    logger = logging.Logger(name, level=level)
+    logger = logging.Logger(f"{LOGGER_CONFIG['service']}.{name}", level=level)
     logger.addHandler(out_handler)
     logger.addHandler(err_handler)
+
     return logger
 
 
 _logger = get_logger(__name__)
 _logger.info("initialized logger")
+
+# remove root logger handlers if it has been given default handler(s)
+root_logger = logging.getLogger()
+if root_logger.hasHandlers():
+    _logger.info(f"removing root logger handlers: {root_logger.handlers}")
+    root_logger.handlers = []

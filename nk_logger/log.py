@@ -3,15 +3,20 @@ below to stdout and warning-level and above to stderr, provides get_logger
 function. Designed to work well with datadog. """
 
 import logging
-import os
 import sys
 
 from pythonjsonlogger import jsonlogger
 
-level = os.getenv("LOG_LEVEL", "INFO")
-LOGGER_CONFIG = {"level": level, "prefix": ""}
+LOGGER_CONFIG = {"level": "INFO", "prefix": ""}
 
-_level_str2int = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}
+log_level_str2int = {
+    "CRITICAL": 50,
+    "ERROR": 40,
+    "WARNING": 30,
+    "INFO": 20,
+    "DEBUG": 10,
+    "NOTSET": 0,
+}
 
 
 def init_root_logger(level=LOGGER_CONFIG["level"]):
@@ -22,7 +27,7 @@ def init_root_logger(level=LOGGER_CONFIG["level"]):
 
     # convert string form to int for comparisons later
     if isinstance(level, str):
-        level = _level_str2int[level]
+        level = log_level_str2int[level]
 
     root = logging.getLogger()
     root.setLevel(level)
@@ -61,6 +66,6 @@ def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"
 
 
 # on import, remove any preset log handlers and add dd-friendly handlers to root logger
-init_root_logger(level=level)
+init_root_logger()
 logger = get_logger(__name__)
 logger.info("initialized logger")

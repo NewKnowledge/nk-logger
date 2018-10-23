@@ -10,30 +10,37 @@ from pythonjsonlogger import jsonlogger
 
 LOGGER_CONFIG = {"level": "INFO", "prefix": ""}
 
+_level_str2int = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}
+
 
 def init_root_logger(level=LOGGER_CONFIG["level"]):
     """ removes any previous log handlers for root logger, then adds two
     datadog-friendly log handlers to the root logger. one writes to stdout
     and has a log level of the given `level`. The other writes to stderr and
-    has a log level of max(WARNING, level). Both use a Json Formatter. """
+    has a log level of max(WARNING, level). Both use a json formatter. """
+
+    # convert string form to int for comparisons later
+    if isinstance(level, str):
+        level = _level_str2int[level]
 
     root = logging.getLogger()
-    root.handlers = []
     root.setLevel(level)
+    root.handlers = []
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
 
     # out_handler writes to stdout and handles logs of log level 'INFO' and below
     out_handler = logging.StreamHandler(sys.stdout)
     out_handler.setFormatter(formatter)
+    out_handler.setLevel(level)
     out_handler.addFilter(lambda record: record.levelno < logging.WARNING)
+    root.addHandler(out_handler)
 
     # err_handler writes to stderr and handles logs of level max('WARNING', `level`) and above
     err_handler = logging.StreamHandler(sys.stderr)
-    err_handler.setLevel(logging.WARNING)
     err_handler.setFormatter(formatter)
-
-    root.addHandler(out_handler)
+    err_level = max(logging.WARNING, level)
+    err_handler.setLevel(err_level)
     root.addHandler(err_handler)
 
 

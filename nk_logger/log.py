@@ -8,7 +8,8 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-LOGGER_CONFIG = {"level": "INFO", "prefix": ""}
+level = os.getenv("LOG_LEVEL", "INFO")
+LOGGER_CONFIG = {"level": level, "prefix": ""}
 
 _level_str2int = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10, "NOTSET": 0}
 
@@ -60,7 +61,6 @@ def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"
 
 
 # on import, remove any preset log handlers and add dd-friendly handlers to root logger
-level = os.getenv("LOG_LEVEL", "INFO")
 init_root_logger(level=level)
 logger = get_logger(__name__)
 logger.info("initialized logger")

@@ -11,12 +11,12 @@ from nk_logger import get_logger
 logger = get_logger(__name__)
 ```
 
-You can set the log level and service name using `set_logger_config`, e.g. in `config.py`:
+The environment variable `LOG_LEVEL` sets the default log level for new loggers as well as the log level of the root logger, if not provided this defaults to INFO. You can optionally set the default log level and name prefix for any new loggers generated using `set_logger_config`, e.g. in `config.py`:
 ```
 from nk_logger import set_logger_config
 LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO")
-SERVICE_NAME = os.environ.get("SERVICE_NAME", "app")
-set_logger_config(LOG_LEVEL, SERVICE_NAME)
+SERVICE_NAME = os.environ.get("SERVICE_NAME", "")
+set_logger_config(level=LOG_LEVEL, prefix=SERVICE_NAME)
 ```
 
 Then use like:
@@ -28,3 +28,5 @@ logger.warning("something might be wrong here")
 logger.error("oh no, an error!")
 logger.exception("oh no, an error! let's log the stack trace.")
 ```
+
+`init_root_logger`, which is called on import, can be used to set the root logger level and replace any handlers on the root logger with the datadog-friendly handlers.

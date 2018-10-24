@@ -8,7 +8,10 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-LOGGER_CONFIG = {"level": os.getenv("LOG_LEVEL", logging.INFO), "prefix": ""}
+LOGGER_CONFIG = {
+    "level": os.getenv("LOG_LEVEL", logging.INFO),
+    "prefix": os.getenv("SERVICE_NAME", ""),
+}
 
 log_level_str2int = {
     "CRITICAL": 50,
@@ -20,49 +23,52 @@ log_level_str2int = {
 }
 
 
-def init_root_logger(level=None):
-    """ removes any previous log handlers for root logger, then adds two
-    datadog-friendly log handlers to the root logger. one writes to stdout
-    and has a log level of the given `level`. The other writes to stderr and
-    has a log level of max(WARNING, level). Both use a json formatter. """
-
-    level = level if level else LOGGER_CONFIG["level"]
-
-    # convert string form to int for comparisons later
-    if isinstance(level, str):
-        level = log_level_str2int[level]
-
-    root = logging.getLogger()
-    root.setLevel(level)
-    root.handlers = []
+def config_logger(prefix=None, level=None, root_log_level=None):
+    """ Initialize the datadog-friendly log handlers and attach them to the root
+    logger after removing any previous loggers attached to the root. one writes
+    to stdout and has a log level of the given `level`. The other writes to
+    stderr and has a log level of max(WARNING, level). Both use a json formatter.
+    If provided, `prefix` and `level` set log level and logger name prefix values
+    in LOGGER_CONFIG which sets the default for loggers returned by get_logger.
+    By default, the root logger is given the same level as the handlers (`level`
+    if provided or LOGGER_CONFIG['level'] if not); if `root_log_level` is
+    provided, it will be set to that value instead, allowing for the root logger
+    to have a different level than its handlers. """
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
 
-    # out_handler writes to stdout and handles logs of log level 'INFO' and below
+    # out_handler writes to stdout and handles logs of log level min(level, 'INFO') and below
     out_handler = logging.StreamHandler(sys.stdout)
     out_handler.setFormatter(formatter)
-    out_handler.setLevel(level)
     out_handler.addFilter(lambda record: record.levelno < logging.WARNING)
 
     # err_handler writes to stderr and handles logs of level max('WARNING', `level`) and above
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(formatter)
-    err_level = max(logging.WARNING, level)
-    err_handler.setLevel(err_level)
 
+    if level:
+        # convert string form to int for comparisons later
+        if isinstance(level, str):
+            level = log_level_str2int[level]
+        LOGGER_CONFIG["level"] = level
+
+    if prefix:
+        LOGGER_CONFIG["prefix"] = prefix
+
+    # set level of handlers
+    err_handler.setLevel(max(logging.WARNING, LOGGER_CONFIG["level"]))
+    out_handler.setLevel(LOGGER_CONFIG["level"])
+
+    root = logging.getLogger()
+    root.handlers = []
+
+    # add handlers to root logger
     root.addHandler(out_handler)
     root.addHandler(err_handler)
 
-
-def set_logger_config(level=None, prefix=None):
-    """ Sets the default level and prefix values for loggers returned by
-    get_logger. Also sets the root logger level to `level` if provided. """
-
-    if level:
-        LOGGER_CONFIG["level"] = level
-        logging.root.setLevel(level)
-    if prefix:
-        LOGGER_CONFIG["prefix"] = prefix
+    # set root logger level to same as handlers unless root_log_level is provided
+    root_log_level = root_log_level if root_log_level else LOGGER_CONFIG["level"]
+    root.setLevel(root_log_level)
 
 
 def get_logger(name, level=None, prefix=None):
@@ -78,7 +84,6 @@ def get_logger(name, level=None, prefix=None):
     return logger
 
 
-# on import, remove any preset log handlers and add dd-friendly handlers to root logger
-# init_root_logger()
-# _logger = get_logger(__name__)
-# _logger.info("initialized logger")
+config_logger()
+_logger = get_logger(__name__)
+_logger.info("logger initialized")

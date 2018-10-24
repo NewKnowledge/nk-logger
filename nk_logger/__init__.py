@@ -1,1 +1,1 @@
-from .log import get_logger, set_logger_config, init_root_logger
+from .log import get_logger, config_logger

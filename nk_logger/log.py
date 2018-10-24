@@ -18,16 +18,20 @@ LOG_LEVEL_STR2INT = {
 }
 
 
-# set default config using log_level env var if provided
-env_log_level = os.getenv("LOG_LEVEL", logging.INFO)
-if isinstance(env_log_level, str):
-    # convert level to int for comparison
-    env_log_level = LOG_LEVEL_STR2INT[env_log_level]
+LOGGER_CONFIG = {"level": "INFO", "prefix": ""}
 
-LOGGER_CONFIG = {
-    "level": os.getenv("LOG_LEVEL", env_log_level),
-    "prefix": os.getenv("SERVICE_NAME", ""),
-}
+
+def update_config(prefix=None, level=None):
+    """ update default logger config values with any provided, converting level from string to int if needed """
+    level = level if level else LOGGER_CONFIG["level"]
+
+    if isinstance(level, str):
+        # convert string form to int for comparisons
+        level = LOG_LEVEL_STR2INT[level]
+    LOGGER_CONFIG["level"] = level
+
+    if prefix:
+        LOGGER_CONFIG["prefix"] = prefix
 
 
 def config_logger(prefix=None, level=None, root_log_level=None):
@@ -53,32 +57,26 @@ def config_logger(prefix=None, level=None, root_log_level=None):
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(formatter)
 
-    if level:
-        # convert string form to int for comparisons later
-        if isinstance(level, str):
-            level = LOG_LEVEL_STR2INT[level]
-        LOGGER_CONFIG["level"] = level
+    # set log config defaults with level and prefix if provided
+    update_config(prefix=prefix, level=level)
 
-    if prefix:
-        LOGGER_CONFIG["prefix"] = prefix
-
-    # set level for handlers
-    err_handler.setLevel(max(logging.WARNING, LOGGER_CONFIG["level"]))
+    # set log level for err and out handlers
+    err_log_level = max(logging.WARNING, LOGGER_CONFIG["level"])
+    err_handler.setLevel(err_log_level)
     out_handler.setLevel(LOGGER_CONFIG["level"])
 
-    root = logging.getLogger()
-    root.handlers = []
-
-    # add handlers to root logger
-    root.addHandler(out_handler)
-    root.addHandler(err_handler)
-
     # set root logger level to same as handlers unless root_log_level is provided
+    root = logging.getLogger()
     root_log_level = root_log_level if root_log_level else LOGGER_CONFIG["level"]
     root.setLevel(root_log_level)
 
+    # remove any present handlers, then add err and out handlers to root logger
+    root.handlers = []
+    root.addHandler(out_handler)
+    root.addHandler(err_handler)
 
-def get_logger(name, level=None, prefix=None):
+
+def get_logger(name, prefix=None, level=None):
     """ Returns a logger object with given `name` prefixed with `prefix` and log
     level `level`. If level or prefix aren't provided, they are set to
     LOGGER_CONFIG defaults. """
@@ -91,6 +89,9 @@ def get_logger(name, level=None, prefix=None):
     return logger
 
 
-config_logger()
+# update default config values with env vars if provided
+update_config(level=os.getenv("LOG_LEVEL"), prefix=os.getenv("SERVICE_NAME"))
+config_logger()  # configure logger with default values
+
 _logger = get_logger(__name__)
 _logger.info("logger initialized")

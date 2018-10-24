@@ -36,15 +36,9 @@ def update_config(prefix=None, level=None):
 
 def config_logger(prefix=None, level=None, root_log_level=None):
     """ Initialize the datadog-friendly log handlers and attach them to the root
-    logger after removing any previous loggers attached to the root. one writes
-    to stdout and has a log level of the given `level`. The other writes to
-    stderr and has a log level of max(WARNING, level). Both use a json formatter.
-    If provided, `prefix` and `level` set log level and logger name prefix values
-    in LOGGER_CONFIG which sets the default for loggers returned by get_logger.
-    By default, the root logger is given the same level as the handlers (`level`
-    if provided or LOGGER_CONFIG['level'] if not); if `root_log_level` is
-    provided, it will be set to that value instead, allowing for the root logger
-    to have a different level than its handlers. """
+    logger (after removing any previous loggers already attached). If provided, `prefix` and `level` set log level and logger name prefix values
+    in LOGGER_CONFIG which sets the default for loggers returned by get_logger. the root logger is given the same log level as the handlers unless `root_log_level` is
+    provided, in which case it is set to that value instead. """
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
 

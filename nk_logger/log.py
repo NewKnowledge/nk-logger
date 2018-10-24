@@ -20,17 +20,19 @@ log_level_str2int = {
 }
 
 
-def init_root_logger(level=LOGGER_CONFIG["level"]):
+def init_logger(level=None):
     """ removes any previous log handlers for root logger, then adds two
     datadog-friendly log handlers to the root logger. one writes to stdout
     and has a log level of the given `level`. The other writes to stderr and
     has a log level of max(WARNING, level). Both use a json formatter. """
 
+    level = level if level else LOGGER_CONFIG["level"]
+
     # convert string form to int for comparisons later
     if isinstance(level, str):
         level = log_level_str2int[level]
 
-    root = logging.root
+    root = logging.getLogger()
     root.setLevel(level)
     root.handlers = []
 
@@ -41,13 +43,14 @@ def init_root_logger(level=LOGGER_CONFIG["level"]):
     out_handler.setFormatter(formatter)
     out_handler.setLevel(level)
     out_handler.addFilter(lambda record: record.levelno < logging.WARNING)
-    root.addHandler(out_handler)
 
     # err_handler writes to stderr and handles logs of level max('WARNING', `level`) and above
     err_handler = logging.StreamHandler(sys.stderr)
     err_handler.setFormatter(formatter)
     err_level = max(logging.WARNING, level)
     err_handler.setLevel(err_level)
+
+    root.addHandler(out_handler)
     root.addHandler(err_handler)
 
 
@@ -62,10 +65,12 @@ def set_logger_config(level=None, prefix=None):
         LOGGER_CONFIG["prefix"] = prefix
 
 
-def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"]):
+def get_logger(name, level=None, prefix=None):
     """ Returns a logger object with given `name` prefixed with `prefix` and log
     level `level`. If level or prefix aren't provided, they are set to
     LOGGER_CONFIG defaults. """
+    level = level if level else LOGGER_CONFIG["level"]
+    prefix = prefix if prefix else LOGGER_CONFIG["prefix"]
 
     logger_name = f"{prefix}.{name}" if prefix else name
     logger = logging.getLogger(logger_name)

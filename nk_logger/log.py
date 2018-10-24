@@ -50,10 +50,12 @@ def init_root_logger(level=LOGGER_CONFIG["level"]):
     root.addHandler(err_handler)
 
 
-def set_logger_config(level="INFO", prefix=""):
+def set_logger_config(level=None, prefix=None):
     """ sets the default level and prefix values for loggers returned by get_logger """
-    LOGGER_CONFIG["level"] = level
-    LOGGER_CONFIG["prefix"] = prefix
+    if level:
+        LOGGER_CONFIG["level"] = level
+    if prefix:
+        LOGGER_CONFIG["prefix"] = prefix
 
 
 def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"]):
@@ -62,10 +64,12 @@ def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"
     LOGGER_CONFIG defaults. """
 
     logger_name = f"{prefix}.{name}" if prefix else name
-    return logging.Logger(logger_name, level=level)
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(level)
+    return logger
 
 
 # on import, remove any preset log handlers and add dd-friendly handlers to root logger
 init_root_logger()
-logger = get_logger(__name__)
-logger.info("initialized logger")
+_logger = get_logger(__name__)
+_logger.info("initialized logger")

@@ -8,18 +8,25 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
-LOGGER_CONFIG = {
-    "level": os.getenv("LOG_LEVEL", logging.INFO),
-    "prefix": os.getenv("SERVICE_NAME", ""),
-}
-
-log_level_str2int = {
+LOG_LEVEL_STR2INT = {
     "CRITICAL": 50,
     "ERROR": 40,
     "WARNING": 30,
     "INFO": 20,
     "DEBUG": 10,
     "NOTSET": 0,
+}
+
+
+# set default config using log_level env var if provided
+env_log_level = os.getenv("LOG_LEVEL", logging.INFO)
+if isinstance(env_log_level, str):
+    # convert level to int for comparison
+    env_log_level = LOG_LEVEL_STR2INT[env_log_level]
+
+LOGGER_CONFIG = {
+    "level": os.getenv("LOG_LEVEL", env_log_level),
+    "prefix": os.getenv("SERVICE_NAME", ""),
 }
 
 
@@ -37,7 +44,7 @@ def config_logger(prefix=None, level=None, root_log_level=None):
 
     formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
 
-    # out_handler writes to stdout and handles logs of log level min(level, 'INFO') and below
+    # out_handler writes to stdout and handles logs of log level 'INFO' and below
     out_handler = logging.StreamHandler(sys.stdout)
     out_handler.setFormatter(formatter)
     out_handler.addFilter(lambda record: record.levelno < logging.WARNING)
@@ -49,13 +56,13 @@ def config_logger(prefix=None, level=None, root_log_level=None):
     if level:
         # convert string form to int for comparisons later
         if isinstance(level, str):
-            level = log_level_str2int[level]
+            level = LOG_LEVEL_STR2INT[level]
         LOGGER_CONFIG["level"] = level
 
     if prefix:
         LOGGER_CONFIG["prefix"] = prefix
 
-    # set level of handlers
+    # set level for handlers
     err_handler.setLevel(max(logging.WARNING, LOGGER_CONFIG["level"]))
     out_handler.setLevel(LOGGER_CONFIG["level"])
 

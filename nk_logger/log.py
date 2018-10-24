@@ -74,6 +74,6 @@ def get_logger(name, level=LOGGER_CONFIG["level"], prefix=LOGGER_CONFIG["prefix"
 
 
 # on import, remove any preset log handlers and add dd-friendly handlers to root logger
-init_root_logger()
-_logger = get_logger(__name__)
-_logger.info("initialized logger")
+# init_root_logger()
+# _logger = get_logger(__name__)
+# _logger.info("initialized logger")

@@ -4,10 +4,12 @@ function. Designed to work well with datadog. """
 
 import logging
 import sys
+import os
 
 from pythonjsonlogger import jsonlogger
 
-LOGGER_CONFIG = {"level": "INFO", "prefix": ""}
+log_level = os.getenv("LOG_LEVEL", logging.INFO)
+LOGGER_CONFIG = {"level": log_level, "prefix": ""}
 
 log_level_str2int = {
     "CRITICAL": 50,

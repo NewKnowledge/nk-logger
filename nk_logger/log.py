@@ -20,7 +20,7 @@ log_level_str2int = {
 }
 
 
-def init_logger(level=None):
+def init_root_logger(level=None):
     """ removes any previous log handlers for root logger, then adds two
     datadog-friendly log handlers to the root logger. one writes to stdout
     and has a log level of the given `level`. The other writes to stderr and

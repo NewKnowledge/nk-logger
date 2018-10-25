@@ -34,7 +34,7 @@ def update_config(prefix=None, level=None):
         LOGGER_CONFIG["prefix"] = prefix
 
 
-def config_logger(prefix=None, level=None, root_log_level=None):
+def config_logger(prefix=None, level=None, root_log_level=None, formatter=None):
     """ Initialize the datadog-friendly log handlers and attach them to the
     root logger (after removing any previous loggers already attached). If
     provided, `prefix` and `level` set log level and logger name prefix
@@ -43,7 +43,8 @@ def config_logger(prefix=None, level=None, root_log_level=None):
     unless `root_log_level` is provided, in which case it is set to that
     value instead. """
 
-    formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
+    if not formatter:
+        formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
 
     # out_handler writes to stdout and handles logs of log level 'INFO' and below
     out_handler = logging.StreamHandler(sys.stdout)

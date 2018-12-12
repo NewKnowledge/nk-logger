@@ -34,7 +34,7 @@ def update_config(prefix=None, level=None):
         LOGGER_CONFIG["prefix"] = prefix
 
 
-def config_logger(prefix=None, level=None, root_log_level=None, formatter=None):
+def config_logger(prefix=None, level=None, root_log_level=None):
     """ Initialize the datadog-friendly log handlers and attach them to the
     root logger (after removing any previous loggers already attached). If
     provided, `prefix` and `level` set log level and logger name prefix
@@ -43,8 +43,13 @@ def config_logger(prefix=None, level=None, root_log_level=None, formatter=None):
     unless `root_log_level` is provided, in which case it is set to that
     value instead. """
 
-    if not formatter:
+    formatter = None
+
+    dd_agent_active = os.getenv('DD_API_KEY')
+    if dd_agent_active:
         formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
+    else:
+        formatter = logging.Formatter('%(asctime)s - %(filename)s:%(lineno)d %(funcName)s - %(message)s')
 
     # out_handler writes to stdout and handles logs of log level 'INFO' and below
     out_handler = logging.StreamHandler(sys.stdout)
@@ -78,8 +83,8 @@ def get_logger(name, prefix=None, level=None):
     """ Returns a logger object with given `name` prefixed with `prefix` and log
     level `level`. If level or prefix aren't provided, they are set to
     LOGGER_CONFIG defaults. """
-    level = level if level else LOGGER_CONFIG["level"]
-    prefix = prefix if prefix else LOGGER_CONFIG["prefix"]
+    level = level or LOGGER_CONFIG["level"]
+    prefix = prefix or LOGGER_CONFIG["prefix"]
 
     logger_name = f"{prefix}.{name}" if prefix else name
     logger = logging.getLogger(logger_name)

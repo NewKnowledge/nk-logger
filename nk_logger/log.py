@@ -45,7 +45,7 @@ def config_logger(prefix=None, level=None, root_log_level=None):
 
     formatter = None
 
-    dd_agent_active = os.getenv('DD_API_KEY')
+    dd_agent_active = os.getenv('DATADOG_SERVICE_NAME')
     if dd_agent_active:
         formatter = jsonlogger.JsonFormatter(timestamp=True, reserved_attrs=[])
     else:
